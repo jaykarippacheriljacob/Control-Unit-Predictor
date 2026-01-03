@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 import joblib
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+import plotly.subplots as sp
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -48,30 +50,41 @@ def main():
 
     st.success(f"Predicted Max Temperature: {predicted_temp:.2f} °C")
 
-    # Simple heatmap visualization (mocked for demo)
-    # heatmap = np.random.rand(10,10) * (predicted_temp - ambient_temp) + ambient_temp
-    # fig, ax = plt.subplots()
-    # cax = ax.imshow(heatmap, cmap='hot', interpolation='nearest')
-    # ax.set_title("Control Unit Temperature Distribution (Mocked)")
-    # fig.colorbar(cax)
-    # st.pyplot(fig)
-
     # Physics-inspired radial heatmap
-    grid_size = 30
+    grid_size = 50
     x, y = np.meshgrid(np.linspace(-1, 1, grid_size),
-                    np.linspace(-1, 1, grid_size))
+                        np.linspace(-1, 1, grid_size))
     r = np.sqrt(x**2 + y**2)
     r = r / r.max()
 
     heatmap = ambient_temp + (predicted_temp - ambient_temp) * np.exp(-3 * r)
 
-    fig, ax = plt.subplots()
-    cax = ax.imshow(heatmap, cmap='hot', interpolation='bilinear')
-    ax.set_title("Control Unit Temperature Distribution (Radial Decay Model)")
-    ax.set_xlabel("Width")
-    ax.set_ylabel("Height")
-    fig.colorbar(cax)
-    st.pyplot(fig)
+    # Create subplots with 3D surface and contour plot
+    fig = sp.make_subplots(
+        rows=1, cols=2,
+        specs=[[{'type': 'surface'}, {'type': 'contour'}]]
+    )
+
+    # 3D Surface plot
+    fig.add_trace(
+        go.Surface(x=x[0], y=y[:, 0], z=heatmap, colorscale='Hot',
+                   name='Temperature'),
+        row=1, col=1
+    )
+
+    # Contour plot
+    fig.add_trace(
+        go.Contour(x=x[0], y=y[:, 0], z=heatmap, colorscale='Hot',
+                   showscale=True, colorbar=dict(x=1.02)),
+        row=1, col=2
+    )
+
+    fig.update_layout(height=600, title_text="Control Unit Temperature Distribution",
+                      showlegend=False)
+    fig.update_xaxes(title_text="Width", row=1, col=2)
+    fig.update_yaxes(title_text="Height", row=1, col=2)
+
+    st.plotly_chart(fig, width='stretch')
 
 
 if __name__ == "__main__":
