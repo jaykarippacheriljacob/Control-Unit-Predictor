@@ -49,10 +49,27 @@ def main():
     st.success(f"Predicted Max Temperature: {predicted_temp:.2f} °C")
 
     # Simple heatmap visualization (mocked for demo)
-    heatmap = np.random.rand(10,10) * (predicted_temp - ambient_temp) + ambient_temp
+    # heatmap = np.random.rand(10,10) * (predicted_temp - ambient_temp) + ambient_temp
+    # fig, ax = plt.subplots()
+    # cax = ax.imshow(heatmap, cmap='hot', interpolation='nearest')
+    # ax.set_title("Control Unit Temperature Distribution (Mocked)")
+    # fig.colorbar(cax)
+    # st.pyplot(fig)
+
+    # Physics-inspired radial heatmap
+    grid_size = 30
+    x, y = np.meshgrid(np.linspace(-1, 1, grid_size),
+                    np.linspace(-1, 1, grid_size))
+    r = np.sqrt(x**2 + y**2)
+    r = r / r.max()
+
+    heatmap = ambient_temp + (predicted_temp - ambient_temp) * np.exp(-3 * r)
+
     fig, ax = plt.subplots()
-    cax = ax.imshow(heatmap, cmap='hot', interpolation='nearest')
-    ax.set_title("Control Unit Temperature Distribution (Mocked)")
+    cax = ax.imshow(heatmap, cmap='hot', interpolation='bilinear')
+    ax.set_title("Control Unit Temperature Distribution (Radial Decay Model)")
+    ax.set_xlabel("Width")
+    ax.set_ylabel("Height")
     fig.colorbar(cax)
     st.pyplot(fig)
 
