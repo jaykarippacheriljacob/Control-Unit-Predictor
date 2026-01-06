@@ -1,0 +1,8 @@
+# pip install -r requirements.txt
+streamlit
+pandas
+numpy
+joblib
+matplotlib
+plotly
+scikit-learn
